@@ -103,3 +103,76 @@ ylab("Total Count") +
 labs(fill = "survived") +
 facet_grid(~survived)
 ```
+
+Persons in the first class have more chance to survived than perishing.
+
+The survival rate in the first class is better than the survival rate in the second and the third class.
+
+From data analysis perpective, it seems that Pclass is a important variable that can explain who survived and who did not.
+
+###Let's take a look on the "name" variable
+
+Examine the first few names in the training data set
+
+```{r, echo=FALSE}
+head(as.character(train$name))
+```
+
+How many unique names are in the train set and the test set?
+
+```{r}
+length(unique(as.character(data.combined$name)))
+```
+
+1 037 names are unique and 2 duplicated names:
+
+```{r}
+dup.names <- as.character(data.combined[which(duplicated(as.character(data.combined$name))), "name"])
+data.combined[which(data.combined$name %in% dup.names),]
+```
+
+These names are common in England. It represent different persons
+
+We also see that names are formated in a specific way with a Title.
+
+Let's take a look closer to the Title name
+
+Create a utility function to help with title extraction
+NOTE - Using the grep function here
+
+```{r}
+extractTitle <- function(name) {
+  name <- as.character(name)
+  if(length(grep("Miss.", name)) > 0) {
+    return("Miss.")
+  } else if(length(grep("Master.", name)) > 0) {
+    return("Master")
+  } else if(length(grep("Mrs.", name)) > 0) {
+    return("Mrs")
+  } else if(length(grep("Mr.", name)) > 0) {
+    return("Mr")
+  } else {
+    return("other")
+  }
+    
+}
+
+titles <- NULL 
+for(i in 1:nrow(data.combined)){
+  titles <- c(titles, extractTitle(data.combined[i, "name"]))
+  
+}
+data.combined$title <- as.factor(titles)
+```
+
+Let's plot the relationship between Pclass, Survived and Title variables.
+
+```{r}
+ggplot(data.combined[1:891,], aes(x = title, fill = survived))+
+  geom_bar() +
+  facet_wrap(~pclass) +
+  ggtitle("Pclass") + 
+  xlab("Title") +
+  ylab("Total Count") +
+  labs(fill = "Survived")
+```
