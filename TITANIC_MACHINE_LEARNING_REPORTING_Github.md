@@ -242,3 +242,93 @@ facet_grid(~survived)
 ```
 
 ![](TITANIC_MACHINE_LEARNING_REPORTING_Github_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+Persons in the first class have more chance to survived than perishing.
+
+The survival rate in the first class is better than the survival rate in the second and the third class.
+
+From data analysis perpective, it seems that Pclass is a important variable that can explain who survived and who did not.
+
+### Let's take a look on the "name" variable
+
+Examine the first few names in the training data set
+
+    ## [1] "Braund, Mr. Owen Harris"                            
+    ## [2] "Cumings, Mrs. John Bradley (Florence Briggs Thayer)"
+    ## [3] "Heikkinen, Miss. Laina"                             
+    ## [4] "Futrelle, Mrs. Jacques Heath (Lily May Peel)"       
+    ## [5] "Allen, Mr. William Henry"                           
+    ## [6] "Moran, Mr. James"
+
+How many unique names are in the train set and the test set?
+
+``` r
+length(unique(as.character(data.combined$name)))
+```
+
+    ## [1] 1307
+
+1 037 names are unique and 2 duplicated names:
+
+``` r
+dup.names <- as.character(data.combined[which(duplicated(as.character(data.combined$name))), "name"])
+data.combined[which(data.combined$name %in% dup.names),]
+```
+
+    ##     survived pclass                 name    sex  age sibsp parch ticket
+    ## 290        1      3 Connolly, Miss. Kate female 22.0     0     0 370373
+    ## 697        0      3     Kelly, Mr. James   male 44.0     0     0 363592
+    ## 892     None      3     Kelly, Mr. James   male 34.5     0     0 330911
+    ## 898     None      3 Connolly, Miss. Kate female 30.0     0     0 330972
+    ##       fare cabin embarked
+    ## 290 7.7500              Q
+    ## 697 8.0500              S
+    ## 892 7.8292              Q
+    ## 898 7.6292              Q
+
+These names are common in England. It represent different persons
+
+We also see that names are formated in a specific way with a Title.
+
+Let's take a look closer to the Title name
+
+Create a utility function to help with title extraction NOTE - Using the grep function here
+
+``` r
+extractTitle <- function(name) {
+  name <- as.character(name)
+  if(length(grep("Miss.", name)) > 0) {
+    return("Miss.")
+  } else if(length(grep("Master.", name)) > 0) {
+    return("Master")
+  } else if(length(grep("Mrs.", name)) > 0) {
+    return("Mrs")
+  } else if(length(grep("Mr.", name)) > 0) {
+    return("Mr")
+  } else {
+    return("other")
+  }
+    
+}
+
+titles <- NULL 
+for(i in 1:nrow(data.combined)){
+  titles <- c(titles, extractTitle(data.combined[i, "name"]))
+  
+}
+data.combined$title <- as.factor(titles)
+```
+
+Let's plot the relationship between Pclass, Survived and Title variables.
+
+``` r
+ggplot(data.combined[1:891,], aes(x = title, fill = survived))+
+  geom_bar() +
+  facet_wrap(~pclass) +
+  ggtitle("Pclass") + 
+  xlab("Title") +
+  ylab("Total Count") +
+  labs(fill = "Survived")
+```
+
+![](TITANIC_MACHINE_LEARNING_REPORTING_Github_files/figure-markdown_github/unnamed-chunk-14-1.png)
